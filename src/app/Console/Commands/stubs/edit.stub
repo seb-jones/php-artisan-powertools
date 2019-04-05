@@ -1,0 +1,6 @@
+<form method="post" action="{{ route('dummies.update') }}">
+    @csrf
+    @method('put')
+    <input type='hidden' name='id' value='{{$dummy->id}}'>
+    <input type='submit'>
+</form>

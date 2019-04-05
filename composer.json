@@ -1,0 +1,16 @@
+{
+    "name": "sebj/php-artisan-powertools",
+    "version": "1.0.0",
+    "extra": {
+        "laravel": {
+            "providers": [
+                "PhpArtisanPowertools\\ServiceProvider"
+            ]
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "PhpArtisanPowertools\\": "src/"
+        }
+    }
+}

@@ -1,0 +1,5 @@
+@foreach ($dummies as $dummy)
+
+<p>{{ $dummy->id }}</p>
+
+@endforeach

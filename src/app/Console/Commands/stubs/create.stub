@@ -1,0 +1,4 @@
+<form method="post" action="{{ route('dummies.store') }}">
+    @csrf
+    <input type='submit'>
+</form>
