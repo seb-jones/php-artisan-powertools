@@ -4,6 +4,7 @@ namespace PhpArtisanPowertools\App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Arr;
 
 class ReseedCommand extends Command
@@ -39,6 +40,8 @@ class ReseedCommand extends Command
      */
     public function handle()
     {
+        Schema::disableForeignKeyConstraints();
+
         $tables = DB::select('SHOW TABLES');
 
         foreach ($tables as $table) {
@@ -50,6 +53,8 @@ class ReseedCommand extends Command
                 DB::table($table[$key])->truncate();
             }
         }
+
+        Schema::enableForeignKeyConstraints();
 
         $this->call('db:seed');
     }
