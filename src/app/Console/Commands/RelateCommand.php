@@ -101,7 +101,7 @@ METHOD;
 
         $fileContents = substr_replace($fileContents, $method, $lastBracePos, 0);
 
-        $this->info($fileContents);
+        File::put($this->modelPath($relater), $fileContents);
     }
 
     private function modelPath($model)
@@ -124,16 +124,16 @@ METHOD;
             '--table' => $relatee,
         ]);
 
-        $filename = "${timestamp}_$migrationName.php";
+        $filename = "migrations/${timestamp}_$migrationName.php";
 
-        $fileContents = File::get(database_path("migrations/$filename"));
+        $fileContents = File::get(database_path($filename));
 
         $fileContents = Str::replaceArray('//', [
             '$this->unsignedInteger(\'' . $relater . '_id\');',
             '$this->dropColumn(\'' . $relater . '_id\');',
         ], $fileContents);
 
-        $this->info($fileContents);
+        File::put(database_path($filename), $fileContents);
     }
 
     private function createPivotTableMigration($relater, $relatee)
@@ -155,9 +155,9 @@ METHOD;
             '--create' => $tableName,
         ]);
 
-        $filename = "${timestamp}_$migrationName.php";
+        $filename = "migrations/${timestamp}_$migrationName.php";
 
-        $fileContents = File::get(database_path("migrations/$filename"));
+        $fileContents = File::get(database_path($filename));
 
         $fileContents = preg_replace_callback(
             '/\$table-\>timestamps\(\);/',
@@ -170,6 +170,6 @@ METHOD;
             $fileContents
         );
 
-        $this->info($fileContents);
+        File::put(database_path($filename), $fileContents);
     }
 }
