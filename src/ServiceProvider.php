@@ -3,7 +3,6 @@
 namespace PhpArtisanPowertools;
 
 use PhpArtisanPowertools\App\Console\Commands\CrudMakeCommand;
-use PhpArtisanPowertools\App\Console\Commands\PivotMakeCommand;
 use PhpArtisanPowertools\App\Console\Commands\ReseedCommand;
 use PhpArtisanPowertools\App\Console\Commands\RelateCommand;
 use Illuminate\Support\ServiceProvider as LaravelServiceProvider;
@@ -30,7 +29,6 @@ class ServiceProvider extends LaravelServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 CrudMakeCommand::class,
-                PivotMakeCommand::class,
                 ReseedCommand::class,
                 RelateCommand::class,
             ]);
