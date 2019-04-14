@@ -4,6 +4,7 @@ namespace PhpArtisanPowertools\App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
 class RelateCommand extends Command
@@ -137,5 +138,38 @@ METHOD;
 
     private function createPivotTableMigration($relater, $relatee)
     {
+        $models = Arr::sort([
+            snake_case(str_singular($relater)),
+            snake_case(str_singular($relatee)),
+        ]);
+
+        // TODO make sure we have the right format e.g. leading zeros, etc.
+        $timestamp = date('Y_m_d_His');
+
+        $tableName = $models[0] . "_" . $models[1];
+
+        $migrationName = "create_${tableName}_table";
+
+        $this->call('make:migration', [
+            'name' => $migrationName,
+            '--create' => $tableName,
+        ]);
+
+        $filename = "${timestamp}_$migrationName.php";
+
+        $fileContents = File::get(database_path("migrations/$filename"));
+
+        $fileContents = preg_replace_callback(
+            '/\$table-\>timestamps\(\);/',
+            function ($matches) use ($models) {
+                return 
+                    "\$table->unsignedInteger('${models[0]}_id');\n" .
+                    "            \$table->unsignedInteger('${models[1]}_id');\n" . 
+                    "            " . $matches[0];
+            },
+            $fileContents
+        );
+
+        $this->info($fileContents);
     }
 }
