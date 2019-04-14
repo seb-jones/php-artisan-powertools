@@ -4,6 +4,7 @@ namespace PhpArtisanPowertools\App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 
 class RelateCommand extends Command
 {
@@ -60,16 +61,19 @@ class RelateCommand extends Command
 
         switch ($relationship) {
         case 'hasOne':
-            $this->info($this->insertRelationshipMethod($modelA, 'hasOne', $modelB));
-            $this->info($this->insertRelationshipMethod($modelB, 'belongsTo', $modelA));
+            $this->insertRelationshipMethod($modelA, 'hasOne', $modelB);
+            $this->insertRelationshipMethod($modelB, 'belongsTo', $modelA);
+            $this->createForeignKeyMigration($modelA, $modelB);
             break;
         case 'hasMany':
-            $this->info($this->insertRelationshipMethod($modelA, 'hasMany', $modelB));
-            $this->info($this->insertRelationshipMethod($modelB, 'belongsTo', $modelA));
+            $this->insertRelationshipMethod($modelA, 'hasMany', $modelB);
+            $this->insertRelationshipMethod($modelB, 'belongsTo', $modelA);
+            $this->createForeignKeyMigration($modelA, $modelB);
             break;
         case 'belongsToMany':
-            $this->info($this->insertRelationshipMethod($modelA, 'belongsToMany', $modelB));
-            $this->info($this->insertRelationshipMethod($modelB, 'belongsToMany', $modelA));
+            $this->insertRelationshipMethod($modelA, 'belongsToMany', $modelB);
+            $this->insertRelationshipMethod($modelB, 'belongsToMany', $modelA);
+            $this->createPivotTableMigration($modelA, $modelB);
             break;
         }
     }
@@ -102,5 +106,36 @@ METHOD;
     private function modelPath($model)
     {
         return app_path($model . '.php');
+    }
+
+    private function createForeignKeyMigration($relater, $relatee)
+    {
+        $relater = snake_case(str_singular($relater));
+        $relatee = snake_case(str_plural($relatee));
+
+        // TODO make sure we have the right format e.g. leading zeros, etc.
+        $timestamp = date('Y_m_d_His');
+
+        $migrationName = "add_${relater}_id_to_${relatee}_table";
+
+        $this->call('make:migration', [
+            'name' => $migrationName,
+            '--table' => $relatee,
+        ]);
+
+        $filename = "${timestamp}_$migrationName.php";
+
+        $fileContents = File::get(database_path("migrations/$filename"));
+
+        $fileContents = Str::replaceArray('//', [
+            '$this->unsignedInteger(\'' . $relater . '_id\');',
+            '$this->dropColumn(\'' . $relater . '_id\');',
+        ], $fileContents);
+
+        $this->info($fileContents);
+    }
+
+    private function createPivotTableMigration($relater, $relatee)
+    {
     }
 }
