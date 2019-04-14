@@ -48,12 +48,12 @@ class RelateCommand extends Command
         $modelA = studly_case($this->argument('model1'));
         $modelB = studly_case($this->argument('model2'));
 
-        if (!File::exists(app_path($modelA . '.php'))) {
+        if (!File::exists($this->modelPath($modelA))) {
             $this->error("Model '$modelA' does not exist.");
             return;
         }
 
-        if (!File::exists(app_path($modelB . '.php'))) {
+        if (!File::exists($this->modelPath($modelB))) {
             $this->error("Model '$modelB' does not exist.");
             return;
         }
@@ -82,12 +82,25 @@ class RelateCommand extends Command
         }
 
         $method = <<<METHOD
-        public function $methodName()
-        {
-            \$this->$relationship('\\App\\$relatee');
-        }
+
+    public function $methodName()
+    {
+        \$this->$relationship('\\App\\$relatee');
+    }
+
 METHOD;
 
-        return $method;
+        $fileContents = File::get($this->modelPath($relater));
+
+        $lastBracePos = strrpos($fileContents, '}');
+
+        $fileContents = substr_replace($fileContents, $method, $lastBracePos, 0);
+
+        $this->info($fileContents);
+    }
+
+    private function modelPath($model)
+    {
+        return app_path($model . '.php');
     }
 }
