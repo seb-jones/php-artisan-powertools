@@ -90,7 +90,7 @@ class RelateCommand extends Command
 
     public function $methodName()
     {
-        \$this->$relationship('\\App\\$relatee');
+        return \$this->$relationship('\\App\\$relatee');
     }
 
 METHOD;
