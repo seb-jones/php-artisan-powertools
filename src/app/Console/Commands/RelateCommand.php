@@ -129,8 +129,8 @@ METHOD;
         $fileContents = File::get(database_path($filename));
 
         $fileContents = Str::replaceArray('//', [
-            '$this->unsignedInteger(\'' . $relater . '_id\');',
-            '$this->dropColumn(\'' . $relater . '_id\');',
+            '$table->unsignedInteger(\'' . $relater . '_id\');',
+            '$table->dropColumn(\'' . $relater . '_id\');',
         ], $fileContents);
 
         File::put(database_path($filename), $fileContents);
