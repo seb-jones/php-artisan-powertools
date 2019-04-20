@@ -138,10 +138,10 @@ METHOD;
 
     private function createPivotTableMigration($relater, $relatee)
     {
-        $models = Arr::sort([
+        $models = array_values(Arr::sort([
             snake_case(str_singular($relater)),
             snake_case(str_singular($relatee)),
-        ]);
+        ]));
 
         // TODO make sure we have the right format e.g. leading zeros, etc.
         $timestamp = date('Y_m_d_His');

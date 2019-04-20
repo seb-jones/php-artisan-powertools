@@ -50,8 +50,8 @@ class ReseedCommand extends Command
 
             if ($table[$key] !== "migrations") {
                 $this->info("Truncating table " . $table[$key]);
-                /* DB::table($table[$key])->truncate(); */
-                DB::table($table[$key])->delete();
+                DB::table($table[$key])->truncate();
+                /* DB::table($table[$key])->delete(); */
             }
         }
 
