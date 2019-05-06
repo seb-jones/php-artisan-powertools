@@ -14,7 +14,7 @@ class ReseedCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'db:reseed';
+    protected $signature = 'db:reseed {--delete : Use the DELETE SQL Command instead of the TRUNCATE SQL Command. This can be faster, but will NOT reset auto-incrementing columns. Use at your own risk.}';
 
     /**
      * The console command description.
@@ -50,8 +50,13 @@ class ReseedCommand extends Command
 
             if ($table[$key] !== "migrations") {
                 $this->info("Truncating table " . $table[$key]);
-                DB::table($table[$key])->truncate();
-                /* DB::table($table[$key])->delete(); */
+
+                if ($this->option('delete')) {
+                    DB::table($table[$key])->delete();
+                }
+                else {
+                    DB::table($table[$key])->truncate();
+                }
             }
         }
 
