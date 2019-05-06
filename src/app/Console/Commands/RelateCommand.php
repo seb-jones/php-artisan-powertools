@@ -23,15 +23,6 @@ class RelateCommand extends Command
      */
     protected $description = 'Generates the methods and migrations for a relationship between two models.';
 
-    /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        parent::__construct();
-    }
 
     /**
      * Execute the console command.
@@ -40,15 +31,15 @@ class RelateCommand extends Command
      */
     public function handle()
     {
-        $relationship = camel_case($this->argument('relationship'));
+        $relationship = Str::camel($this->argument('relationship'));
 
         if (!in_array($relationship, ['hasOne', 'hasMany', 'belongsToMany'])) {
-            $this->error('Relate accepts the following as it\'s second argument: hasOne, hasMany, belongsToMany');
+            $this->error('Relate accepts the following as its second argument: hasOne, hasMany, belongsToMany');
             return;
         }
 
-        $modelA = studly_case($this->argument('model1'));
-        $modelB = studly_case($this->argument('model2'));
+        $modelA = $this->getAbsoluteNamespace($this->argument('model1'));
+        $modelB = $this->getAbsoluteNamespace($this->argument('model2'));
 
         if (!File::exists($this->modelPath($modelA))) {
             $this->error("Model '$modelA' does not exist.");
@@ -81,16 +72,16 @@ class RelateCommand extends Command
 
     private function insertRelationshipMethod($relater, $relationship, $relatee)
     {
-        $methodName = camel_case($relatee);
+        $methodName = Str::camel($this->getModelName($relatee));
         if ($relationship === 'hasMany' || $relationship === 'belongsToMany') {
-            $methodName = str_plural($methodName);
+            $methodName = Str::plural($methodName);
         }
 
         $method = <<<METHOD
 
     public function $methodName()
     {
-        return \$this->$relationship('\\App\\$relatee');
+        return \$this->$relationship($relatee::class);
     }
 
 METHOD;
@@ -106,15 +97,15 @@ METHOD;
 
     private function modelPath($model)
     {
-        return app_path($model . '.php');
+
+        return app_path(str_replace('\\App\\', '', $model) . '.php');
     }
 
     private function createForeignKeyMigration($relater, $relatee)
     {
-        $relater = snake_case(str_singular($relater));
-        $relatee = snake_case(str_plural($relatee));
+        $relater = Str::snake(Str::singular($this->getModelName($relater)));
+        $relatee = Str::snake(Str::plural($this->getModelName($relatee)));
 
-        // TODO make sure we have the right format e.g. leading zeros, etc.
         $timestamp = date('Y_m_d_His');
 
         $migrationName = "add_${relater}_id_to_${relatee}_table";
@@ -139,8 +130,8 @@ METHOD;
     private function createPivotTableMigration($relater, $relatee)
     {
         $models = array_values(Arr::sort([
-            snake_case(str_singular($relater)),
-            snake_case(str_singular($relatee)),
+            Str::snake(Str::singular($this->getModelName($relater))),
+            Str::snake(Str::singular($this->getModelName($relatee))),
         ]));
 
         // TODO make sure we have the right format e.g. leading zeros, etc.
@@ -171,5 +162,24 @@ METHOD;
         );
 
         File::put(database_path($filename), $fileContents);
+    }
+
+    private function getAbsoluteNamespace(string $class)
+    {
+        $class = collect(explode('\\', trim($class)))->map(function ($string) {
+            return Str::studly($string);
+        })->implode('\\');
+
+        if (Str::startsWith($class, '\\')) {
+            return $class;
+        }
+        else {
+            return "\\App\\$class";
+        }
+    }
+
+    private function getModelName(string $class)
+    {
+        return collect(explode('\\', trim($class)))->last();
     }
 }
