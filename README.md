@@ -25,7 +25,7 @@ This package adds the following commands to `php artisan`
 * `db:reseed`
 * `relate`
 
-Below are brief descriptions of each command. For more please
+Below are brief descriptions of each command. For more information please
 type `php artisan help command`
 
 ### make:crud
