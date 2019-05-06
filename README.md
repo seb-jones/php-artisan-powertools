@@ -2,7 +2,7 @@
 A set of Laravel Artisan commands to automate common tasks.
 
 ## Installation
-Currently, installation must be done manually. Add the following to the `composer.json`:
+Currently, installation must be done manually. Add the following to the `composer.json` in the root directory of your Laravel project:
 ```
     "repositories": [
         {
