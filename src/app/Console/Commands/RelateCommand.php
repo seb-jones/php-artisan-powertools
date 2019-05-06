@@ -15,7 +15,7 @@ class RelateCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'relate {model1} {relationship} {model2}';
+    protected $signature = 'relate {model1} {relationship} {model2} {--legacy : Use \'unsignedInteger\' instead of \'unsignedBigInteger\' for foreign keys in migrations.}';
 
     /**
      * The console command description.
@@ -120,9 +120,16 @@ METHOD;
 
         $fileContents = File::get(database_path($filename));
 
+        if ($this->option('legacy')) {
+            $foreignKeyType = 'unsignedInteger';
+        }
+        else {
+            $foreignKeyType = 'unsignedBigInteger';
+        }
+
         $fileContents = Str::replaceArray('//', [
-            '$table->unsignedInteger(\'' . $relater . '_id\');',
-            '$table->dropColumn(\'' . $relater . '_id\');',
+            "\$table->$foreignKeyType('{$relater}_id');",
+            "\$table->dropColumn('${relater}_id');",
         ], $fileContents);
 
         File::put(database_path($filename), $fileContents);
@@ -151,12 +158,19 @@ METHOD;
 
         $fileContents = File::get(database_path($filename));
 
+        if ($this->option('legacy')) {
+            $foreignKeyType = 'unsignedInteger';
+        }
+        else {
+            $foreignKeyType = 'unsignedBigInteger';
+        }
+
         $fileContents = preg_replace_callback(
             '/\$table-\>timestamps\(\);/',
-            function ($matches) use ($models) {
+            function ($matches) use ($models, $foreignKeyType) {
                 return 
-                    "\$table->unsignedInteger('${models[0]}_id');\n" .
-                    "            \$table->unsignedInteger('${models[1]}_id');\n" . 
+                    "\$table->$foreignKeyType('${models[0]}_id');\n" .
+                    "            \$table->$foreignKeyType('${models[1]}_id');\n" . 
                     "            " . $matches[0];
             },
             $fileContents
