@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use PhpArtisanPowertools\ClassName;
 
 class RelateCommand extends Command
 {
@@ -38,8 +39,8 @@ class RelateCommand extends Command
             return;
         }
 
-        $modelA = $this->getAbsoluteNamespace($this->argument('model1'));
-        $modelB = $this->getAbsoluteNamespace($this->argument('model2'));
+        $modelA = ClassName::absolute($this->argument('model1'));
+        $modelB = ClassName::absolute($this->argument('model2'));
 
         if (!File::exists($this->modelPath($modelA))) {
             $this->error("Model '$modelA' does not exist.");
@@ -72,7 +73,7 @@ class RelateCommand extends Command
 
     private function insertRelationshipMethod($relater, $relationship, $relatee)
     {
-        $methodName = Str::camel($this->getModelName($relatee));
+        $methodName = Str::camel(ClassName::class($relatee));
         if ($relationship === 'hasMany' || $relationship === 'belongsToMany') {
             $methodName = Str::plural($methodName);
         }
@@ -103,8 +104,8 @@ METHOD;
 
     private function createForeignKeyMigration($relater, $relatee)
     {
-        $relater = Str::snake(Str::singular($this->getModelName($relater)));
-        $relatee = Str::snake(Str::plural($this->getModelName($relatee)));
+        $relater = Str::snake(Str::singular(ClassName::class($relater)));
+        $relatee = Str::snake(Str::plural(ClassName::class($relatee)));
 
         $timestamp = date('Y_m_d_His');
 
@@ -130,8 +131,8 @@ METHOD;
     private function createPivotTableMigration($relater, $relatee)
     {
         $models = array_values(Arr::sort([
-            Str::snake(Str::singular($this->getModelName($relater))),
-            Str::snake(Str::singular($this->getModelName($relatee))),
+            Str::snake(Str::singular(ClassName::class($relater))),
+            Str::snake(Str::singular(ClassName::class($relatee))),
         ]));
 
         // TODO make sure we have the right format e.g. leading zeros, etc.
@@ -162,24 +163,5 @@ METHOD;
         );
 
         File::put(database_path($filename), $fileContents);
-    }
-
-    private function getAbsoluteNamespace(string $class)
-    {
-        $class = collect(explode('\\', trim($class)))->map(function ($string) {
-            return Str::studly($string);
-        })->implode('\\');
-
-        if (Str::startsWith($class, '\\')) {
-            return $class;
-        }
-        else {
-            return "\\App\\$class";
-        }
-    }
-
-    private function getModelName(string $class)
-    {
-        return collect(explode('\\', trim($class)))->last();
     }
 }
