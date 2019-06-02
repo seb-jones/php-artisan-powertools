@@ -1,4 +1,4 @@
-# php-artisan-powertools
+# PHP Artisan Powertools
 A set of Laravel Artisan commands to automate common tasks.
 
 ## Installation
