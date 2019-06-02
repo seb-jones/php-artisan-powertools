@@ -36,7 +36,17 @@ Truncates all the tables in the database except `migrations`, and then calls `ph
 
 ### relate
 Generates the methods and migrations needed for the specified relation. For example:
+
 ```
 php artisan relate User hasMany Post
 ```
+
 This will add a `hasMany` method to `\App\User`, a `belongsTo` method to `\App\Post`, and a migration that adds a `user_id` column to the `posts` table.
+
+`relate` accepts arguments in any order, always reading model names left-to-right. So this would also work:
+
+```
+php artisan relate hasMany User Post
+```
+
+This means you can alias the commands nicely. For example, I have them aliased to `parho`, `parhm` and  `parbtm`.
