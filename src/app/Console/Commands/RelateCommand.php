@@ -15,7 +15,8 @@ class RelateCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'relate {model1} {relationship} {model2} {--legacy : Use \'unsignedInteger\' instead of \'unsignedBigInteger\' for foreign keys in migrations.}';
+    protected $signature = 'relate {args*} 
+                                   {--legacy : Use \'unsignedInteger\' instead of \'unsignedBigInteger\' for foreign keys in migrations.}';
 
     /**
      * The console command description.
@@ -24,7 +25,6 @@ class RelateCommand extends Command
      */
     protected $description = 'Generates the methods and migrations for a relationship between two models.';
 
-
     /**
      * Execute the console command.
      *
@@ -32,24 +32,43 @@ class RelateCommand extends Command
      */
     public function handle()
     {
-        $relationship = Str::camel($this->argument('relationship'));
+        $arguments = collect($this->argument('args'));
 
-        if (!in_array($relationship, ['hasOne', 'hasMany', 'belongsToMany'])) {
-            $this->error('Relate accepts the following as its second argument: hasOne, hasMany, belongsToMany');
-            return;
+        if ($arguments->count() !== 3) {
+            $this->error('Relate expects exactly 3 arguments.');
+            return 1;
+        }
+        
+        $relationship = $arguments->first(function ($argument) {
+            return $this->isRelationshipString($argument);
+        });
+
+        if (!$relationship) {
+            $this->error("Relate requires that one of it's arguments be hasOne, hasMany or belongsToMany.");
+            return 1;
         }
 
-        $modelA = ClassName::absolute($this->argument('model1'));
-        $modelB = ClassName::absolute($this->argument('model2'));
+        $modelA = $arguments->first(function ($argument) {
+            return !$this->isRelationshipString($argument);
+        });
+
+        $modelB = $arguments->first(function ($argument) use ($modelA) {
+            return !$this->isRelationshipString($argument) &&
+                $argument !== $modelA;
+        });
+
+        $relationship = Str::camel($relationship);
+        $modelA = ClassName::absolute($modelA);
+        $modelB = ClassName::absolute($modelB);
 
         if (!File::exists($this->modelPath($modelA))) {
             $this->error("Model '$modelA' does not exist.");
-            return;
+            return 1;
         }
 
         if (!File::exists($this->modelPath($modelB))) {
             $this->error("Model '$modelB' does not exist.");
-            return;
+            return 1;
         }
 
         switch ($relationship) {
@@ -98,7 +117,6 @@ METHOD;
 
     private function modelPath($model)
     {
-
         return app_path(str_replace('\\App\\', '', $model) . '.php');
     }
 
@@ -177,5 +195,10 @@ METHOD;
         );
 
         File::put(database_path($filename), $fileContents);
+    }
+
+    private function isRelationshipString(string $string)
+    {
+        return in_array(Str::camel($string), ['hasOne', 'hasMany', 'belongsToMany']);
     }
 }
