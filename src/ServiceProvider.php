@@ -6,6 +6,7 @@ use PhpArtisanPowertools\App\Console\Commands\CrudMakeCommand;
 use PhpArtisanPowertools\App\Console\Commands\ReseedCommand;
 use PhpArtisanPowertools\App\Console\Commands\RelateCommand;
 use Illuminate\Support\ServiceProvider as LaravelServiceProvider;
+use Illuminate\Support\Facades\Blade;
 
 class ServiceProvider extends LaravelServiceProvider
 {
@@ -26,6 +27,10 @@ class ServiceProvider extends LaravelServiceProvider
      */
     public function boot()
     {
+        Blade::directive('dd', function ($expression) {
+            return "<?php dd($expression); ?>";
+        });
+
         if ($this->app->runningInConsole()) {
             $this->commands([
                 CrudMakeCommand::class,
