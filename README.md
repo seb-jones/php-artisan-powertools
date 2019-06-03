@@ -25,8 +25,12 @@ This package adds the following commands to `php artisan`
 * `db:reseed`
 * `relate`
 
-Below are brief descriptions of each command. For more information please
-type `php artisan help command`
+It also adds a Blade directive:
+
+* `@dd()`
+
+Below are brief descriptions of each component. For more information please
+type `php artisan help command`.
 
 ### make:crud
 Generates everything needed for a CRUD resource: model, controller, factory, seeder, migration, **views**. There is even an option to insert a `Route::resource` call in your `routes\web.php` file. Multiple model names can be specified to quickly generate the boilerplate for all your models.
@@ -50,3 +54,13 @@ php artisan relate hasMany User Post
 ```
 
 This means you can alias the commands nicely. For example, I have them aliased to `parho`, `parhm` and  `parbtm`.
+
+### @dd
+
+Lets you use `dd` in blade templates. This is essentially just a shorthand of:
+
+```
+@php dd() @endphp
+```
+
+I find myself typing the above code often enough that it seems to warrant it's own directive.
