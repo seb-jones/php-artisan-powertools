@@ -57,7 +57,7 @@ This means you can alias the commands nicely. For example, I have them aliased t
 
 ### @dd
 
-Lets you use `dd` in blade templates. This is essentially just a shorthand of:
+Lets you use [dd](https://laravel.com/docs/5.8/helpers#method-dd) in blade templates. This is essentially just a shorthand of:
 
 ```
 @php dd() @endphp
