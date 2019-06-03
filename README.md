@@ -27,7 +27,7 @@ This package adds the following commands to `php artisan`
 
 It also adds a Blade directive:
 
-* `@dd()`
+* `@dd`
 
 Below are brief descriptions of each component. For more information please
 type `php artisan help command`.
